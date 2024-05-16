@@ -1516,18 +1516,18 @@ void EncodeDock::filterCodecParams(const QString &vcodec, QStringList &other)
     if (i >= other.size())
         return;
 
-    QString oldParams = other[i].mid(::strlen(codecKey));
-    QStringList newParams;
-    foreach (QString kv_str, oldParams.split(':', Qt::SkipEmptyParts)) {
+    QString origParams = other[i].mid(codecKey.length());
+    QStringList keepParams;
+    foreach (QString kv_str, origParams.split(':', Qt::SkipEmptyParts)) {
         QStringList kv_parts = kv_str.split('=', Qt::SkipEmptyParts);
         if (kv_parts.size() > 1) // found key and value
             if (!filterKeys.contains(kv_parts[0]))
-                newParams << kv_str;
+                keepParams << kv_str;
     }
 
     other.removeAt(i);
-    if (newParams.size() > 0)
-        other.insert(i, codecKey + newParams.join(':'));
+    if (keepParams.size() > 0)
+        other.insert(i, codecKey + keepParams.join(':'));
 }
 
 void EncodeDock::onVideoCodecComboChanged(int index, bool ignorePreset, bool resetBframes)
