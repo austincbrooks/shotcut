@@ -653,10 +653,9 @@ Mlt::Properties *EncodeDock::collectProperties(int realtime, bool includeProfile
                 // Most x265 parameters must be supplied through x265-params.
                 QString x265params = QString::fromUtf8(p->get("x265-params"));
                 switch (ui->videoRateControlCombo->currentIndex()) {
-                case RateControlAverage: {
+                case RateControlAverage:
                     setIfNotSet(p, "vb", ui->videoBitrateCombo->currentText().toLatin1().constData());
                     break;
-                }
                 case RateControlConstant: {
                     QString b = ui->videoBitrateCombo->currentText();
                     // x265 does not expect bitrate suffixes and requires Kb/s
@@ -703,15 +702,13 @@ Mlt::Properties *EncodeDock::collectProperties(int realtime, bool includeProfile
                 p->set("x265-params", x265params.toUtf8().constData());
             } else if (vcodec == "libsvtav1") {
                 // Most SVT-AV1 parameters must be supplied through svtav1-params.
-                // The legacy parameters are for UI controls and custom presets.
+                // The preset properties are for UI controls and custom presets.
                 QString bitrate_text = ui->videoBitrateCombo->currentText();
                 int bitrate_kbps = qMax(QString(bitrate_text).replace('k', "").replace('M', "000").toInt(), 1);
                 int buffer_bits = qRound(ui->videoBufferSizeSpinner->value() * 1024.0 * 8.0);
                 int buffer_ms = qRound(float(buffer_bits) / float(bitrate_kbps));
                 QStringList encParams;
 
-                // If the data rates are not close enough to user spec,
-                // we may need to reduce overshoot-pct and mbr-overshoot-pct.
                 switch (ui->videoRateControlCombo->currentIndex()) {
                 case RateControlAverage: {
                     encParams << QString("rc=1");
@@ -1484,20 +1481,20 @@ void EncodeDock::filterCodecParams(const QString &vcodec, QStringList &other)
 
     if (vcodec == "libx265") {
         codecKey = "x265-params=";
-        filterKeys << "crf";
         filterKeys << "bitrate";
         filterKeys << "vbv-bufsize";
+        filterKeys << "crf";
         filterKeys << "vbv-maxrate";
         filterKeys << "keyint";
-        filterKeys << "bframes";
         filterKeys << "scenecut";
+        filterKeys << "bframes";
         filterKeys << "interlace";
     } else if (vcodec == "libsvtav1") {
         codecKey = "svtav1-params=";
         filterKeys << "rc";
-        filterKeys << "crf";
         filterKeys << "tbr";
         filterKeys << "buf-sz";
+        filterKeys << "crf";
         filterKeys << "mbr";
         filterKeys << "keyint";
         filterKeys << "scd";
@@ -1508,7 +1505,7 @@ void EncodeDock::filterCodecParams(const QString &vcodec, QStringList &other)
         return;
 
     int i = 0;
-    foreach (QString line, other) {
+    foreach (const QString &line, other) {
         if (line.startsWith(codecKey))
             break;
         ++i;
@@ -1518,7 +1515,7 @@ void EncodeDock::filterCodecParams(const QString &vcodec, QStringList &other)
 
     QString origParams = other[i].mid(codecKey.length());
     QStringList keepParams;
-    foreach (QString kv_str, origParams.split(':', Qt::SkipEmptyParts)) {
+    foreach (const QString &kv_str, origParams.split(':', Qt::SkipEmptyParts)) {
         QStringList kv_parts = kv_str.split('=', Qt::SkipEmptyParts);
         if (kv_parts.size() > 1) // found key and value
             if (!filterKeys.contains(kv_parts[0]))
